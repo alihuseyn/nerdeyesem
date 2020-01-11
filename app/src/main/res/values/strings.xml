@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Nerde Yesem</string>
+    <string name="thumbnail">Thumbnail</string>
+    
+    <string name="your_restaurant_search_guide">Your restaurant search guide</string>
+
+    <string name="gps_provider_activate">You must enable GPS to use the correct coordinates about the location.</string>
+    <string name="enable">Enable</string>
+    <string name="cancel">Cancel</string>
+</resources>

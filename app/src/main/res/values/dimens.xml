@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Thumb width & height in restaurant list-->
+    <dimen name="thumb_width">90dp</dimen>
+    <dimen name="thumb_height">90dp</dimen>
+
+    <!-- Splash Screen Text Size -->
+    <dimen name="splash_title">24sp</dimen>
+    <dimen name="splash_subtitle">16sp</dimen>
+    <dimen name="splash_title_padding">10dp</dimen>
+
+</resources>
