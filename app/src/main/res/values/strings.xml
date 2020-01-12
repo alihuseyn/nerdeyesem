@@ -1,10 +1,18 @@
 <resources>
     <string name="app_name">Nerde Yesem</string>
     <string name="thumbnail">Thumbnail</string>
-    
     <string name="your_restaurant_search_guide">Your restaurant search guide</string>
-
     <string name="gps_provider_activate">You must enable GPS to use the correct coordinates about the location.</string>
     <string name="enable">Enable</string>
     <string name="cancel">Cancel</string>
+    <string name="price_for_two">Average price for two: %1$s %2$s</string>
+    <string name="not_any_info">Not any information</string>
+    <string name="restaurants">Restaurants</string>
+    <string name="auth_required">Authentication is required with fingerprint. Just click on fingerprint button and continue. If device not support then just skip authentication</string>
+    <string name="auth_not_supported">Device not support fingerprint authentication</string>
+    <string name="auth_skip">Skip Authentication</string>
+    <string name="verify_identity_title">Fingerprint Authentication</string>
+    <string name="verify_identity_subtitle">Verify your identity</string>
+    <string name="verify_identity_description">Confirm  your fingerprint so Nerde Yesem can verify it\'s you</string>
+    <string name="empty_data_or_internet_connection">Please check internet connection then retry again to fetch restaurants\' data from Zomato API</string>
 </resources>

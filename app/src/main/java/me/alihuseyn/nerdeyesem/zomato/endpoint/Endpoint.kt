@@ -40,7 +40,7 @@ abstract class Endpoint(val endpoint: String) {
     /**
      * Total data retrieved on each request if pagination supported
      */
-    private val TOTAL_DATA_COUNT_ON_PAGINATE: Int = 7
+    val TOTAL_DATA_COUNT_ON_PAGINATE: Int = 10
 
     /**
      * The result after retrieve operations
@@ -50,7 +50,7 @@ abstract class Endpoint(val endpoint: String) {
     /**
      * Offset to arrange for pagination start
      */
-    private var offset: Int = 0
+    var offset: Int = 0
 
 
     /**

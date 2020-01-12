@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Badge View attribute information -->
+    <declare-styleable name="Badge">
+        <attr name="variant" format="enum">
+            <enum name="primary" value="0" />
+            <enum name="danger" value="1" />
+            <enum name="dark" value="2" />
+            <enum name="info" value="3" />
+            <enum name="secondary" value="4" />
+            <enum name="success" value="5" />
+            <enum name="warning" value="6" />
+        </attr>
+    </declare-styleable>
+</resources>

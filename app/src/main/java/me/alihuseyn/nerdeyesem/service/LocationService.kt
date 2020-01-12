@@ -61,24 +61,26 @@ class LocationService(val context: Context) {
 
         return status
     }
+
     /**
      * Detect location and trigger callback function
      *
      * @return Unit
      */
-    fun detectLocation () {
+    fun detectLocation() {
         // Check Permission each time
         if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             if (isLocationProviderEnabled()) {
                 fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
                 fusedLocationClient.lastLocation.addOnSuccessListener {
-                    it?.let {
+                    if (it != null) {
                         this.latitude = it.latitude
                         this.longitude = it.longitude
-                        // Trigger result found
-                        isLocationDetected = true
-                        listener.onResult(latitude, longitude)
                     }
+
+                    // Trigger result found
+                    isLocationDetected = true
+                    listener.onResult(latitude, longitude)
                 }
             } else {
                 // trigger listener dialog

@@ -8,21 +8,30 @@ import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
+import android.view.View
+import android.widget.LinearLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import me.alihuseyn.nerdeyesem.R
 import me.alihuseyn.nerdeyesem.adapter.RecycleViewAdapter
 import me.alihuseyn.nerdeyesem.service.LocationService
 import me.alihuseyn.nerdeyesem.zomato.endpoint.SearchEndpoint
 import me.alihuseyn.nerdeyesem.zomato.model.RestaurantModel
 import me.alihuseyn.nerdeyesem.zomato.model.SearchModel
-import java.io.Serializable
 import java.lang.Exception
 import java.lang.ref.WeakReference
 
-class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdapter.RestaurantClickListener {
-
+/**
+ * <h1>MainActivity Activity</h1>
+ * <p>
+ *    Main Activity which show all the restaurants
+ *    with card view
+ * </p>
+ */
+class MainActivity : AppCompatActivity(),
+    LocationService.Event,
+    RecycleViewAdapter.RestaurantClickListener {
     /**
      * Permission request code
      */
@@ -41,12 +50,12 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
     /**
      * Recycle View
      */
-    private lateinit var  recycleView: RecyclerView
+    private lateinit var recycleView: RecyclerView
 
     /**
      * Data of found Restaurants
      */
-    val restaurants:ArrayList<RestaurantModel> = ArrayList()
+    var restaurants: ArrayList<RestaurantModel> = ArrayList()
 
     /**
      * Detect whether data is loading or not
@@ -61,7 +70,12 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
     /**
      * Search Endpoint
      */
-    var searchEndpoint:SearchEndpoint? = null
+    var searchEndpoint: SearchEndpoint? = null
+
+    /**
+     * Swipe Refresh layout
+     */
+    lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     /**
      * Location service
@@ -73,15 +87,22 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Set Toolbar
+        supportActionBar?.setTitle(R.string.restaurants)
+
         // Initialize location service
         locationService = LocationService(applicationContext)
         locationService.listener = this
 
         // Initialize Search Endpoint
-        searchEndpoint  = SearchEndpoint(locationService.latitude, locationService.longitude)
+        searchEndpoint = SearchEndpoint(locationService.latitude, locationService.longitude)
 
         // Initialize Recycle View
         initializeRecycleView()
+
+        // Initialize Swipe Refresh
+        swipeRefreshLayout = findViewById(R.id.swipe_container)
+        swipeRefreshLayout.setOnRefreshListener { reset() }
     }
 
     /**
@@ -93,19 +114,20 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
         recycleView.adapter = recycleViewAdapter
 
         // Set Scroll Listener
-        val self = this
-        recycleView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int){
+        recycleView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 val layout: LinearLayoutManager? = recyclerView.layoutManager as LinearLayoutManager?
                 if (!isLoading && !isFinished) {
                     layout?.let {
                         if (it.findLastCompletelyVisibleItemPosition() == restaurants.size - 1) {
                             isLoading = true
-                            // Increment next
-                            searchEndpoint?.next()
+                            if (restaurants.size > 0) {
+                                // Increment next
+                                searchEndpoint?.next()
+                            }
                             // Execute retrieve request
-                            RetrieveData(self).execute()
+                            RetrieveData(this@MainActivity).execute()
                         }
                     }
                 }
@@ -125,11 +147,15 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
         if (checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
         ) {
-            requestPermissions(arrayOf(
-                Manifest.permission.INTERNET,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ), PERMISSION_REQUEST_CODE)
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.INTERNET,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ), PERMISSION_REQUEST_CODE
+            )
         } else {
+            // Set refresh mode available
+            swipeRefreshLayout.isRefreshing = true
             // Already Granted ready for operation
             // Try to detect last known location
             locationService.detectLocation()
@@ -137,7 +163,6 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
     }
 
     override fun onResume() {
-        println("On Resume")
         super.onResume()
         // Check whether the function worked before
         // Location detected
@@ -146,9 +171,13 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
         }
     }
 
+    override fun onBackPressed() {
+        moveTaskToBack(true)
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when(requestCode) {
+        when (requestCode) {
             PERMISSION_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults.first() == PackageManager.PERMISSION_GRANTED) {
                     // Ready to detect locations
@@ -181,10 +210,12 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
      * @see LocationService.Event.onPermissionRequire
      */
     override fun onPermissionRequire() {
-        requestPermissions(arrayOf(
-            Manifest.permission.INTERNET,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ), PERMISSION_REQUEST_CODE)
+        requestPermissions(
+            arrayOf(
+                Manifest.permission.INTERNET,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ), PERMISSION_REQUEST_CODE
+        )
     }
 
     /**
@@ -204,7 +235,7 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
             RetrieveData(this).execute()
         }
 
-        builder.setPositiveButton(R.string.enable) {_, _ ->
+        builder.setPositiveButton(R.string.enable) { _, _ ->
             startActivityForResult(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), GPS_ENABLE_RESULT)
         }
 
@@ -212,10 +243,68 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
     }
 
     /**
+     * Reset all the available data content
+     */
+    private fun reset() {
+        isLoading = false
+        isFinished = false
+        // ServiceEndpoint reset
+        searchEndpoint?.run { offset = 0 }
+        this.resetRecycleView()
+        // Location service reset
+        locationService.isLocationDetected = false
+        // Call operation again
+        operate()
+    }
+
+    private fun resetRecycleView() {
+        // Clear restaurants
+        restaurants.clear()
+        recycleViewAdapter.isFinished = false
+        recycleViewAdapter.notifyDataSetChanged()
+        recycleView.visibility = View.VISIBLE
+        findViewById<LinearLayout>(R.id.restaurants_list_empty).visibility = View.INVISIBLE
+    }
+
+    /**
+     * Initialize view with data
+     *
+     * @param result SearchModel?
+     */
+    private fun launchContentForData(result: SearchModel?) {
+        result?.run {
+            if (result.restaurants.isNotEmpty()) {
+                this@MainActivity.restaurants.addAll(result.restaurants)
+                this@MainActivity.recycleViewAdapter.notifyDataSetChanged()
+                this@MainActivity.isLoading = false
+            } else {
+                this@MainActivity.isLoading = false
+                this@MainActivity.isFinished = true
+                this@MainActivity.recycleViewAdapter.isFinished = true
+            }
+            this@MainActivity.swipeRefreshLayout.isRefreshing = false
+        }
+
+        // On empty or null result show empty view if not any data
+        if (result == null) {
+            this.isLoading = false
+            this.isFinished = true
+            this.recycleViewAdapter.isFinished = true
+            if (recycleViewAdapter.data.isNullOrEmpty()) {
+                this.recycleView.visibility = View.INVISIBLE
+                this.findViewById<LinearLayout>(R.id.restaurants_list_empty).visibility = View.VISIBLE
+            }
+            recycleViewAdapter.notifyDataSetChanged()
+            swipeRefreshLayout.isRefreshing = false
+        }
+
+    }
+
+    /**
      * Async class used to retrieve data on other thread
      * for not blocking main UI thread
      */
-     private class RetrieveData internal constructor(context: MainActivity): AsyncTask<Unit, Void, SearchModel?>() {
+    private class RetrieveData internal constructor(context: MainActivity) : AsyncTask<Unit, Void, SearchModel?>() {
         private val activityReference: WeakReference<MainActivity> = WeakReference(context)
 
         override fun doInBackground(vararg p0: Unit?): SearchModel? {
@@ -225,27 +314,15 @@ class MainActivity : AppCompatActivity(), LocationService.Event, RecycleViewAdap
                     it.searchEndpoint?.retrieve()?.data() as SearchModel?
                 }
             } catch (e: Exception) {
-                Log.d(this.javaClass.simpleName, e.message!!)
                 null
             }
         }
 
         override fun onPostExecute(result: SearchModel?) {
             super.onPostExecute(result)
-            result?.run {
-                val activity = activityReference.get()
-                if (result.restaurants.isNotEmpty()) {
-                    activity?.run {
-                        activity.restaurants.addAll(result.restaurants)
-                        activity.recycleViewAdapter.notifyDataSetChanged()
-                        activity.isLoading = false
-                    }
-                } else {
-                    activity?.run {
-                        activity.isLoading = false
-                        activity.isFinished = true
-                    }
-                }
+            val activity = activityReference.get()
+            activity?.run {
+                launchContentForData(result)
             }
         }
     }

@@ -25,7 +25,8 @@ data class RestaurantModel(
     @JsonContent("phone_numbers") var phoneNumbers: String? = null,
     @JsonContent var timings: String? = null,
     var photos: ArrayList<PhotoModel> = ArrayList(),
-    var rating:RatingModel = RatingModel()
+    var rating:RatingModel = RatingModel(),
+    var distance: Int? = null
 ) : Model() {
 
     /**

@@ -25,7 +25,7 @@ class SearchEndpoint(var latitude: Double?, var longitude: Double?): Endpoint("/
      * @see Endpoint.data for more information
      */
     override fun data() : Model {
-        return SearchModel(rawJson = this.data)
+        return SearchModel(rawJson = this.data, latitude = latitude, longitude = longitude)
     }
 
 }

@@ -1,5 +1,6 @@
 package me.alihuseyn.nerdeyesem.zomato.model
 
+import android.location.Location
 import org.json.JSONObject
 
 /**
@@ -16,11 +17,25 @@ data class SearchModel(
 ) : Model() {
 
     /**
+     * Current latitude location
+     */
+    var currentLatitude: Double? = null
+
+    /**
+     * Current longitude location
+     */
+    var currentLongitude: Double? = null
+
+    /**
      * Constructor
      *
      * @param rawJson JSONObject|null raw json content
      */
-    constructor(rawJson: JSONObject?): this() {
+    constructor(rawJson: JSONObject?, latitude: Double?, longitude: Double?): this() {
+        this.currentLatitude = latitude
+        this.currentLongitude = longitude
+
+        // Modeling
         rawJson?.let { toModel(it) }
     }
 
@@ -32,7 +47,25 @@ data class SearchModel(
         // Detect restaurants and collect data
         json.optJSONArray("restaurants")?.let {
             for (index in 0 until it.length()) {
-                restaurants.add(RestaurantModel(rawJson = it.getJSONObject(index).optJSONObject("restaurant")))
+                val restaurant = RestaurantModel(rawJson = it.getJSONObject(index).optJSONObject("restaurant"))
+
+                if (currentLongitude != null
+                    && currentLatitude != null
+                    && restaurant.location.longitude != null
+                    && restaurant.location.latitude != null
+                ) {
+                    val starPoint = Location("Start")
+                    starPoint.longitude = this.currentLongitude!!
+                    starPoint.latitude = this.currentLatitude!!
+
+                    val endPoint = Location("End")
+                    endPoint.longitude = restaurant.location.longitude!!.toDouble()
+                    endPoint.latitude = restaurant.location.latitude!!.toDouble()
+                    // Calculate distance
+                    restaurant.distance = Math.round(starPoint.distanceTo(endPoint))
+                }
+
+                restaurants.add(restaurant)
             }
         }
     }

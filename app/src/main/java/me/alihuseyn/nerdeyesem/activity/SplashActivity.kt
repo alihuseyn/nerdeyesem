@@ -12,13 +12,13 @@ import me.alihuseyn.nerdeyesem.R
  *  Splash Activity helps to show splash screen
  * </p>
  */
-class SplashActivity: Activity() {
+class SplashActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
         Handler().postDelayed({
-            startActivity(Intent(applicationContext, MainActivity::class.java))
+            startActivity(Intent(applicationContext, AuthActivity::class.java))
             finish()
         }, 2000)
     }
