@@ -147,12 +147,7 @@ class MainActivity : AppCompatActivity(),
         if (checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
         ) {
-            requestPermissions(
-                arrayOf(
-                    Manifest.permission.INTERNET,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ), PERMISSION_REQUEST_CODE
-            )
+            onPermissionRequire()
         } else {
             // Set refresh mode available
             swipeRefreshLayout.isRefreshing = true
@@ -182,6 +177,8 @@ class MainActivity : AppCompatActivity(),
                 if (grantResults.isNotEmpty() && grantResults.first() == PackageManager.PERMISSION_GRANTED) {
                     // Ready to detect locations
                     locationService.detectLocation()
+                } else {
+                    this.locationService.isLocationDetected = true
                 }
             }
         }

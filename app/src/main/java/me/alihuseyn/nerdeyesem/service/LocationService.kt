@@ -68,28 +68,32 @@ class LocationService(val context: Context) {
      * @return Unit
      */
     fun detectLocation() {
-        // Check Permission each time
-        if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            if (isLocationProviderEnabled()) {
-                fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-                fusedLocationClient.lastLocation.addOnSuccessListener {
-                    if (it != null) {
-                        this.latitude = it.latitude
-                        this.longitude = it.longitude
-                    }
+        if (!isLocationDetected) {
+            // Check Permission each time
+            if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (isLocationProviderEnabled()) {
+                    fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+                    fusedLocationClient.lastLocation.addOnSuccessListener {
+                        if (it != null) {
+                            this.latitude = it.latitude
+                            this.longitude = it.longitude
+                        }
 
-                    // Trigger result found
-                    isLocationDetected = true
-                    listener.onResult(latitude, longitude)
+                        // Trigger result found
+                        isLocationDetected = true
+                        listener.onResult(latitude, longitude)
+                    }
+                } else {
+                    // trigger listener dialog
+                    isLocationDetected = false
+                    listener.onProviderDisable()
                 }
             } else {
-                // trigger listener dialog
                 isLocationDetected = false
-                listener.onProviderDisable()
+                listener.onPermissionRequire()
             }
         } else {
-            isLocationDetected = false
-            listener.onPermissionRequire()
+            listener.onResult(latitude, longitude)
         }
     }
 
